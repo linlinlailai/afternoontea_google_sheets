@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>下午茶點餐系統</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 5px;
+    }
+    .summary {
+      background: #f0f0f0;
+      padding: 10px;
+      margin-top: 20px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+
+
+
+    <h2>下午茶點餐系統</h2>
+  <form id="orderForm">
+    <label>姓名：<br><input type="text" id="name" name="name" required></label><br>
+    <label>食物：<br><input type="text" id="food" name="food"></label><br>
+    <label>飲料：<br><input type="text" id="drink" name="drink"></label><br>
+    <button type="submit">送出</button>
+  </form>
+
+
+
+    <div class="summary">
+    <h3>統計結果</h3>
+    <div id="summary"></div>
+  </div>
+
+  <div>
+    <h3>所有點餐</h3>
+    <ul id="orderList"></ul>
+  </div>
+
+
+
+  <script>
+  const scriptURL = "你的 Apps Script 網址"; // 等我下一步教你部署
+  const form = document.getElementById("orderForm");
+  const summary = document.getElementById("summary");
+  const orderList = document.getElementById("orderList");
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    fetch(scriptURL, {
+      method: 'POST',
+      body: new FormData(form)
+    }).then(() => {
+      form.reset();
+      loadOrders();
+    });
+  });
+
+  function loadOrders() {
+    fetch(scriptURL + "?action=get")
+      .then(res => res.json())
+      .then(data => {
+        orderList.innerHTML = "";
+        let foodCount = {}, drinkCount = {};
+        data.forEach(row => {
+          const [name, food, drink] = row;
+          orderList.innerHTML += `<li>${name}：🍱 ${food} 🧋 ${drink}</li>`;
+          if (food) foodCount[food] = (foodCount[food] || 0) + 1;
+          if (drink) drinkCount[drink] = (drinkCount[drink] || 0) + 1;
+        });
+        summary.innerHTML = `🍱 食物統計：<br>` + Object.entries(foodCount).map(([k,v]) => `${k}: ${v}`).join("<br>") +
+                            `<br><br>🧋 飲料統計：<br>` + Object.entries(drinkCount).map(([k,v]) => `${k}: ${v}`).join("<br>");
+      });
+  }
+
+  loadOrders();
+</script>
+</body>
+</html>
