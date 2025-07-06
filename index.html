@@ -2,18 +2,145 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>下午茶點餐系統</title>
   <style>
-    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-    img { max-width: 100%; height: auto; margin-bottom: 20px; }
-    input, button { margin: 5px 0; padding: 5px; }
-    .item-group { display: flex; gap: 10px; margin-bottom: 10px; }
-    .summary { background: #f8f8f8; padding: 10px; margin-top: 20px; }
-    button { cursor: pointer; }
+    body {
+      font-family: "Noto Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 700px;
+      margin: auto;
+      padding: 15px 20px;
+      background: #fdfdfd;
+      color: #333;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+      color: #34495e;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 1rem;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #2980b9;
+      box-shadow: 0 0 5px rgba(41, 128, 185, 0.5);
+    }
+    form > button[type="submit"] {
+      width: 100%;
+      padding: 12px 0;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      background-color: #27ae60;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
+    }
+    form > button[type="submit"]:hover {
+      background-color: #219150;
+    }
+    .item-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .item-group input[type="text"] {
+      flex-grow: 1;
+    }
+    .item-group button {
+      background-color: #e74c3c;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.3s ease;
+    }
+    .item-group button:hover {
+      background-color: #c0392b;
+    }
+    .add-btn {
+      background-color: #2980b9 !important;
+      padding: 8px 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .add-btn:hover {
+      background-color: #1c5980 !important;
+    }
+    .summary {
+      background: #ecf0f1;
+      padding: 15px 20px;
+      margin-top: 30px;
+      border-radius: 8px;
+      color: #2c3e50;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    h3 {
+      margin-top: 30px;
+      color: #2c3e50;
+      border-bottom: 2px solid #2980b9;
+      padding-bottom: 6px;
+      font-weight: 700;
+    }
+    ul#orderList {
+      padding-left: 20px;
+      color: #34495e;
+    }
+    ul#orderList li {
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
     @media screen and (max-width: 600px) {
-      body { padding: 10px; }
-      .item-group { flex-direction: column; }
+      .item-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .item-group button {
+        width: 100%;
+        padding: 10px 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+      .add-btn {
+        width: 100%;
+        font-size: 1.1rem;
+        margin-bottom: 25px;
+      }
+      form > button[type="submit"] {
+        font-size: 1.4rem;
+        padding: 14px 0;
+      }
     }
   </style>
 </head>
@@ -21,11 +148,15 @@
   <h2>下午茶點餐系統</h2>
   <img src="IMG_3037.jpeg" alt="菜單圖片" />
 
-  <form id="orderForm">
-    <label>姓名：<br><input type="text" id="name" name="name" required></label><br>
+  <form id="orderForm" autocomplete="off">
+    <label for="name">姓名：</label>
+    <input type="text" id="name" name="name" required placeholder="請輸入姓名" />
 
     <div id="food-section"></div>
+    <button type="button" class="add-btn" id="addFoodBtn">＋ 新增食物</button>
+
     <div id="drink-section"></div>
+    <button type="button" class="add-btn" id="addDrinkBtn">＋ 新增飲料</button>
 
     <button type="submit">送出 / 更新</button>
   </form>
@@ -33,7 +164,6 @@
   <div class="summary">
     <h3>統計結果</h3>
     <div id="summary"></div>
-    <button onclick="exportToExcel()">⬇ 匯出 Excel</button>
   </div>
 
   <div>
@@ -44,48 +174,65 @@
 <script>
   const scriptURL = "https://script.google.com/macros/s/AKfycbwKSqJP_0Txx1vSsLsP0NlEeFaFXju7kycqn5y3IArHgcPABWoGsISI5QopDPL3ayrH/exec";
 
-  function renderItemSection(sectionId, name, items = []) {
+  function addItem(sectionId, name, value = "") {
     const section = document.getElementById(sectionId);
-    const label = name === 'food' ? '食物' : '飲料';
-    section.innerHTML = `<label>${label}：</label><br>`;
-
-    items.forEach(value => {
-      const div = document.createElement("div");
-      div.className = "item-group";
-      div.innerHTML = `<input type="text" name="${name}" value="${value}"> 
-                       <button type="button" onclick="this.parentElement.remove()">－</button>`;
-      section.appendChild(div);
-    });
-
-    const addDiv = document.createElement("div");
-    addDiv.className = "item-group";
-    const addBtn = document.createElement("button");
-    addBtn.type = "button";
-    addBtn.textContent = `＋ 新增${label}`;
-    addBtn.onclick = () => {
-      const div = document.createElement("div");
-      div.className = "item-group";
-      div.innerHTML = `<input type="text" name="${name}"> 
-                       <button type="button" onclick="this.parentElement.remove()">－</button>`;
-      section.insertBefore(div, addDiv);
-    };
-    addDiv.appendChild(addBtn);
-    section.appendChild(addDiv);
+    const div = document.createElement("div");
+    div.className = "item-group";
+    div.innerHTML = `
+      <input type="text" name="${name}" value="${value}" placeholder="請輸入${name === 'food' ? '食物' : '飲料'}" />
+      <button type="button" aria-label="刪除此項目">－</button>
+    `;
+    // 點擊減號刪除這組
+    div.querySelector("button").onclick = () => div.remove();
+    section.appendChild(div);
   }
+
+  // 按鈕事件：新增食物飲料
+  document.getElementById("addFoodBtn").addEventListener("click", () => addItem("food-section", "food"));
+  document.getElementById("addDrinkBtn").addEventListener("click", () => addItem("drink-section", "drink"));
 
   const form = document.getElementById("orderForm");
   form.addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("name").value.trim();
-    const foods = Array.from(document.querySelectorAll("input[name=food]")).map(f => f.value).filter(Boolean);
-    const drinks = Array.from(document.querySelectorAll("input[name=drink]")).map(f => f.value).filter(Boolean);
+    if (!name) {
+      alert("請輸入姓名！");
+      return;
+    }
+    const foods = Array.from(document.querySelectorAll("input[name=food]"))
+                      .map(f => f.value.trim())
+                      .filter(Boolean);
+    const drinks = Array.from(document.querySelectorAll("input[name=drink]"))
+                      .map(f => f.value.trim())
+                      .filter(Boolean);
+
+    if (foods.length === 0 && drinks.length === 0) {
+      alert("請至少點一樣食物或飲料！");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("food", foods.join(", "));
     formData.append("drink", drinks.join(", "));
-    fetch(scriptURL, { method: 'POST', body: formData })
-      .then(() => { form.reset(); renderItemSection("food-section", "food"); renderItemSection("drink-section", "drink"); loadOrders(); });
+
+    fetch(scriptURL, { method: "POST", body: formData })
+      .then(() => {
+        alert("送出成功！");
+        form.reset();
+        clearSections();
+        loadOrders();
+      })
+      .catch(err => {
+        alert("送出失敗，請稍後再試");
+        console.error(err);
+      });
   });
+
+  function clearSections() {
+    document.getElementById("food-section").innerHTML = "";
+    document.getElementById("drink-section").innerHTML = "";
+  }
 
   function loadOrders() {
     fetch(scriptURL + "?action=get")
@@ -97,58 +244,23 @@
         const foodCount = {}, drinkCount = {};
         data.forEach(([name, food, drink]) => {
           orderList.innerHTML += `<li>${name}：🍱 ${food} 🧋 ${drink}</li>`;
-          food.split(/,|\s+/).forEach(f => { if(f) foodCount[f] = (foodCount[f]||0)+1; });
-          drink.split(/,|\s+/).forEach(d => { if(d) drinkCount[d] = (drinkCount[d]||0)+1; });
+          food.split(/,|\s+/).forEach(f => { if(f) foodCount[f] = (foodCount[f]||0) + 1; });
+          drink.split(/,|\s+/).forEach(d => { if(d) drinkCount[d] = (drinkCount[d]||0) + 1; });
         });
         summary.innerHTML =
-          "🍱 食物：<br>" + Object.entries(foodCount).map(([k,v])=>`${k}: ${v}`).join("<br>") +
-          "<br><br>🧋 飲料：<br>" + Object.entries(drinkCount).map(([k,v])=>`${k}: ${v}`).join("<br>");
+          "🍱 食物：<br>" + Object.entries(foodCount).map(([k,v]) => `${k}: ${v}`).join("<br>") +
+          "<br><br>🧋 飲料：<br>" + Object.entries(drinkCount).map(([k,v]) => `${k}: ${v}`).join("<br>");
       });
   }
 
-  function exportToExcel() {
-  fetch(scriptURL + "?action=export")
-    .then(response => {
-      if (!response.ok) throw new Error("下載失敗：" + response.statusText);
-      return response.blob();
-    })
-    .then(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "下午茶點餐統計.xlsx";
-      a.click();
-      window.URL.revokeObjectURL(url);
-    })
-    .catch(error => {
-      alert("下載錯誤：" + error.message);
-    });
-}
-
-
-
+  // 載入並填入姓名對應的餐點
   document.getElementById("name").addEventListener("blur", () => {
     const name = document.getElementById("name").value.trim();
-    if (!name) return;
+    if (!name) {
+      clearSections();
+      return;
+    }
     fetch(scriptURL + "?action=get")
       .then(res => res.json())
       .then(data => {
-        const record = data.find(row => row[0] === name);
-        if (record) {
-          const [_, food, drink] = record;
-          renderItemSection("food-section", "food", food.split(/,|\s+/).filter(Boolean));
-          renderItemSection("drink-section", "drink", drink.split(/,|\s+/).filter(Boolean));
-        } else {
-          renderItemSection("food-section", "food");
-          renderItemSection("drink-section", "drink");
-        }
-      });
-  });
-
-  // 初始化空表單
-  renderItemSection("food-section", "food");
-  renderItemSection("drink-section", "drink");
-  loadOrders();
-</script>
-</body>
-</html>
+        const record = data.find(row => row[0
