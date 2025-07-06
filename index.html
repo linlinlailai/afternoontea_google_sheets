@@ -10,7 +10,7 @@
       max-width: 700px;
       margin: auto;
       padding: 15px 20px;
-      background: #fdfdfd;
+      background: #f9f9f9;
       color: #333;
     }
     h2 {
@@ -23,7 +23,7 @@
       height: auto;
       margin-bottom: 20px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     label {
       font-weight: 600;
@@ -71,7 +71,7 @@
     .item-group input[type="text"] {
       flex-grow: 1;
     }
-    .item-group button {
+    .item-group button.remove-btn {
       background-color: #e74c3c;
       border: none;
       color: white;
@@ -83,19 +83,24 @@
       flex-shrink: 0;
       transition: background-color 0.3s ease;
     }
-    .item-group button:hover {
+    .item-group button.remove-btn:hover {
       background-color: #c0392b;
     }
     .add-btn {
-      background-color: #2980b9 !important;
-      padding: 8px 14px;
+      background-color: #2980b9;
+      padding: 10px 16px;
       font-size: 1rem;
       font-weight: 600;
       border-radius: 6px;
       margin-bottom: 20px;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: inline-block;
     }
     .add-btn:hover {
-      background-color: #1c5980 !important;
+      background-color: #1c5980;
     }
     .summary {
       background: #ecf0f1;
@@ -126,11 +131,11 @@
         flex-direction: column;
         align-items: stretch;
       }
-      .item-group button {
+      .item-group button.remove-btn {
         width: 100%;
-        padding: 10px 0;
         font-size: 1.2rem;
         font-weight: 700;
+        padding: 12px 0;
       }
       .add-btn {
         width: 100%;
@@ -180,14 +185,13 @@
     div.className = "item-group";
     div.innerHTML = `
       <input type="text" name="${name}" value="${value}" placeholder="請輸入${name === 'food' ? '食物' : '飲料'}" />
-      <button type="button" aria-label="刪除此項目">－</button>
+      <button type="button" class="remove-btn" aria-label="刪除此項目">－</button>
     `;
-    // 點擊減號刪除這組
     div.querySelector("button").onclick = () => div.remove();
     section.appendChild(div);
   }
 
-  // 按鈕事件：新增食物飲料
+  // 新增食物、飲料按鈕事件
   document.getElementById("addFoodBtn").addEventListener("click", () => addItem("food-section", "food"));
   document.getElementById("addDrinkBtn").addEventListener("click", () => addItem("drink-section", "drink"));
 
@@ -253,7 +257,7 @@
       });
   }
 
-  // 載入並填入姓名對應的餐點
+  // 載入姓名時帶出對應點餐內容
   document.getElementById("name").addEventListener("blur", () => {
     const name = document.getElementById("name").value.trim();
     if (!name) {
@@ -263,4 +267,25 @@
     fetch(scriptURL + "?action=get")
       .then(res => res.json())
       .then(data => {
-        const record = data.find(row => row[0
+        const record = data.find(row => row[0] === name);
+        if (record) {
+          const [_, food, drink] = record;
+          clearSections();
+          if(food) food.split(/,|\s+/).filter(Boolean).forEach(f => addItem("food-section", "food", f));
+          if(drink) drink.split(/,|\s+/).filter(Boolean).forEach(d => addItem("drink-section", "drink", d));
+        } else {
+          clearSections();
+        }
+      });
+  });
+
+  // 頁面初始化：起始給一個空白的食物和飲料輸入欄
+  window.onload = () => {
+    clearSections();
+    addItem("food-section", "food");
+    addItem("drink-section", "drink");
+    loadOrders();
+  };
+</script>
+</body>
+</html>
