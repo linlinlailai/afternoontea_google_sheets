@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>下午茶點餐系統</title>
   <style>
     body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
     img { max-width: 100%; height: auto; margin-bottom: 20px; }
-    input, button, select { margin: 5px 0; padding: 5px; }
+    input, button { margin: 5px 0; padding: 5px; }
     .item-group { display: flex; gap: 10px; margin-bottom: 10px; }
     .summary { background: #f8f8f8; padding: 10px; margin-top: 20px; }
+    button { cursor: pointer; }
     @media screen and (max-width: 600px) {
       body { padding: 10px; }
       .item-group { flex-direction: column; }
@@ -18,25 +19,13 @@
 </head>
 <body>
   <h2>下午茶點餐系統</h2>
-  <img src="IMG_3037.jpeg" alt="菜單圖片">
+  <img src="IMG_3037.jpeg" alt="菜單圖片" />
+
   <form id="orderForm">
     <label>姓名：<br><input type="text" id="name" name="name" required></label><br>
 
-    <div id="food-section">
-      <label>食物：</label><br>
-      <div class="item-group">
-        <input type="text" name="food">
-        <button type="button" onclick="addItem('food-section', 'food')">＋</button>
-      </div>
-    </div>
-
-    <div id="drink-section">
-      <label>飲料：</label><br>
-      <div class="item-group">
-        <input type="text" name="drink">
-        <button type="button" onclick="addItem('drink-section', 'drink')">＋</button>
-      </div>
-    </div>
+    <div id="food-section"></div>
+    <div id="drink-section"></div>
 
     <button type="submit">送出 / 更新</button>
   </form>
@@ -55,12 +44,33 @@
 <script>
   const scriptURL = "https://script.google.com/macros/s/AKfycbzhEXo-PEZErCQ8U39ANjFio_2VfpRFYM5ZlHdkQ09DxC5bUKVG_iY324-iqikBsy1b/exec";
 
-  function addItem(sectionId, name) {
+  function renderItemSection(sectionId, name, items = []) {
     const section = document.getElementById(sectionId);
-    const div = document.createElement("div");
-    div.className = "item-group";
-    div.innerHTML = `<input type="text" name="${name}"> <button type="button" onclick="this.parentElement.remove()">－</button>`;
-    section.appendChild(div);
+    const label = name === 'food' ? '食物' : '飲料';
+    section.innerHTML = `<label>${label}：</label><br>`;
+
+    items.forEach(value => {
+      const div = document.createElement("div");
+      div.className = "item-group";
+      div.innerHTML = `<input type="text" name="${name}" value="${value}"> 
+                       <button type="button" onclick="this.parentElement.remove()">－</button>`;
+      section.appendChild(div);
+    });
+
+    const addDiv = document.createElement("div");
+    addDiv.className = "item-group";
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.textContent = `＋ 新增${label}`;
+    addBtn.onclick = () => {
+      const div = document.createElement("div");
+      div.className = "item-group";
+      div.innerHTML = `<input type="text" name="${name}"> 
+                       <button type="button" onclick="this.parentElement.remove()">－</button>`;
+      section.insertBefore(div, addDiv);
+    };
+    addDiv.appendChild(addBtn);
+    section.appendChild(addDiv);
   }
 
   const form = document.getElementById("orderForm");
@@ -74,7 +84,7 @@
     formData.append("food", foods.join(", "));
     formData.append("drink", drinks.join(", "));
     fetch(scriptURL, { method: 'POST', body: formData })
-      .then(() => { form.reset(); loadOrders(); });
+      .then(() => { form.reset(); renderItemSection("food-section", "food"); renderItemSection("drink-section", "drink"); loadOrders(); });
   });
 
   function loadOrders() {
@@ -102,28 +112,25 @@
 
   document.getElementById("name").addEventListener("blur", () => {
     const name = document.getElementById("name").value.trim();
+    if (!name) return;
     fetch(scriptURL + "?action=get")
       .then(res => res.json())
       .then(data => {
         const record = data.find(row => row[0] === name);
         if (record) {
           const [_, food, drink] = record;
-          document.getElementById("food-section").innerHTML = "<label>食物：</label><br>";
-          food.split(/,|\s+/).filter(Boolean).forEach(f => addItemValue("food-section", "food", f));
-          document.getElementById("drink-section").innerHTML = "<label>飲料：</label><br>";
-          drink.split(/,|\s+/).filter(Boolean).forEach(d => addItemValue("drink-section", "drink", d));
+          renderItemSection("food-section", "food", food.split(/,|\s+/).filter(Boolean));
+          renderItemSection("drink-section", "drink", drink.split(/,|\s+/).filter(Boolean));
+        } else {
+          renderItemSection("food-section", "food");
+          renderItemSection("drink-section", "drink");
         }
       });
   });
 
-  function addItemValue(sectionId, name, value) {
-    const section = document.getElementById(sectionId);
-    const div = document.createElement("div");
-    div.className = "item-group";
-    div.innerHTML = `<input type="text" name="${name}" value="${value}"> <button type="button" onclick="this.parentElement.remove()">－</button>`;
-    section.appendChild(div);
-  }
-
+  // 初始化空表單
+  renderItemSection("food-section", "food");
+  renderItemSection("drink-section", "drink");
   loadOrders();
 </script>
 </body>
