@@ -107,8 +107,18 @@
   }
 
   function exportToExcel() {
-    window.open(scriptURL + "?action=export");
-  }
+  fetch(scriptURL + "?action=export")
+    .then(response => response.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "下午茶點餐統計.xlsx";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+}
+
 
   document.getElementById("name").addEventListener("blur", () => {
     const name = document.getElementById("name").value.trim();
