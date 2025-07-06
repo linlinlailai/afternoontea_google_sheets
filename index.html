@@ -169,14 +169,20 @@
   </form>
 
   <div class="summary">
-    <h3>統計結果</h3>
-    <div id="summary"></div>
-  </div>
+  <h3>統計結果</h3>
+  <div id="summary"></div>
+  <button class="add-btn" onclick="copyText('summary')">📋 複製統計</button>
+  <button class="add-btn" onclick="sendToLine('summary')">📤 傳送統計到 LINE</button>
+</div>
+
 
   <div>
-    <h3>所有點餐</h3>
-    <ul id="orderList"></ul>
-  </div>
+  <h3>所有點餐</h3>
+  <ul id="orderList"></ul>
+  <button class="add-btn" onclick="copyText('orderList')">📋 複製點餐</button>
+  <button class="add-btn" onclick="sendToLine('orderList')">📤 傳送點餐到 LINE</button>
+</div>
+
 
 <script>
   const scriptURL = "https://script.google.com/macros/s/AKfycbwKSqJP_0Txx1vSsLsP0NlEeFaFXju7kycqn5y3IArHgcPABWoGsISI5QopDPL3ayrH/exec";
@@ -288,6 +294,30 @@
     addItem("drink-section", "drink");
     loadOrders();
   };
+
+function copyText(id) {
+  const element = document.getElementById(id);
+  const text = id === "orderList"
+    ? Array.from(element.querySelectorAll("li")).map(li => li.textContent).join("\n")
+    : element.innerText.replace(/<br>/g, "\n");
+  navigator.clipboard.writeText(text)
+    .then(() => alert("已複製到剪貼簿"))
+    .catch(() => alert("複製失敗"));
+}
+
+function sendToLine(id) {
+  const element = document.getElementById(id);
+  const text = id === "orderList"
+    ? Array.from(element.querySelectorAll("li")).map(li => li.textContent).join("\n")
+    : element.innerText.replace(/<br>/g, "\n");
+  const encoded = encodeURIComponent(text);
+  const lineURL = `https://line.me/R/msg/text/?${encoded}`;
+  window.open(lineURL, "_blank");
+}
+
+
+
+  
 </script>
 </body>
 </html>
