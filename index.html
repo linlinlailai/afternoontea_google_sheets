@@ -150,18 +150,18 @@
   </style>
 </head>
 <body>
-  <h2>下午茶點餐系統</h2>
+  <h2>ESD team 下午茶點餐系統</h2>
   <img src="IMG_3037.jpeg" alt="菜單圖片" />
 
   <form id="orderForm" autocomplete="off">
     <label for="name">姓名：<br> (之前送出過的人，輸入之前的姓名等待一下就會出現之前填的內容，可以修改訂單)</label>
     <input type="text" id="name" name="name" required placeholder="請輸入姓名" /><br><br><br>
 
-    <label for="name">食物：</label> 
+    <label for="name">🍱食物：</label> 
     <div id="food-section"></div>
     <button type="button" class="add-btn" id="addFoodBtn">＋ 新增食物</button><br>
 
-    <label for="name">飲料：</label> 
+    <label for="name">🥤飲料：</label> 
     <div id="drink-section"></div>
     <button type="button" class="add-btn" id="addDrinkBtn">＋ 新增飲料</button><br>
 
@@ -177,10 +177,10 @@
 
 
   <div>
-  <h3>所有點餐</h3>
+  <h3>點餐明細</h3>
   <ul id="orderList"></ul>
-  <button class="add-btn" onclick="copyText('orderList')">📋 複製點餐</button>
-  <button class="add-btn" onclick="sendToLine('orderList')">📤 傳送點餐到 LINE</button>
+  <button class="add-btn" onclick="copyText('orderList')">📋 複製點餐明細</button>
+  <button class="add-btn" onclick="sendToLine('orderList')">📤 傳送點餐明細到 LINE</button>
 </div>
 
   <footer>
@@ -259,13 +259,13 @@
         orderList.innerHTML = "";
         const foodCount = {}, drinkCount = {};
         data.forEach(([name, food, drink]) => {
-          orderList.innerHTML += `<li>${name}：🍱 ${food} 🧋 ${drink}</li>`;
+          orderList.innerHTML += `<li>${name}：🍱 ${food} 🥤 ${drink}</li>`;
           food.split(/,|\s+/).forEach(f => { if(f) foodCount[f] = (foodCount[f]||0) + 1; });
           drink.split(/,|\s+/).forEach(d => { if(d) drinkCount[d] = (drinkCount[d]||0) + 1; });
         });
         summary.innerHTML =
           "🍱 食物：<br>" + Object.entries(foodCount).map(([k,v]) => `${k}: ${v}`).join("<br>") +
-          "<br><br>🧋 飲料：<br>" + Object.entries(drinkCount).map(([k,v]) => `${k}: ${v}`).join("<br>");
+          "<br><br>🥤 飲料：<br>" + Object.entries(drinkCount).map(([k,v]) => `${k}: ${v}`).join("<br>");
       });
   }
 
