@@ -249,6 +249,7 @@
       fetch(scriptURL + "?action=get")
         .then(res => res.json())
         .then(data => {
+          console.log("載入資料：", data);
           const orderList = document.getElementById("orderList");
           const summary = document.getElementById("summary");
           orderList.innerHTML = "";
@@ -256,16 +257,18 @@
 
           data.forEach(([name, food, drink]) => {
             orderList.innerHTML += `<li>${name}：🍱 ${food || ""} 🥤 ${drink || ""}</li>`;
-            if (food) {
-              food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => {
-                foodCount[f] = (foodCount[f] || 0) + 1;
-              });
-            }
-            if (drink) {
-              drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
-                drinkCount[d] = (drinkCount[d] || 0) + 1;
-              });
-            }
+            if (typeof food === "string") {
+  food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => {
+    foodCount[f] = (foodCount[f] || 0) + 1;
+  });
+}
+
+            if (typeof drink === "string") {
+  drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
+    drinkCount[d] = (drinkCount[d] || 0) + 1;
+  });
+}
+
           });
 
           summary.innerHTML =
