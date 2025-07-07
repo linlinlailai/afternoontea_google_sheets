@@ -259,10 +259,21 @@
         orderList.innerHTML = "";
         const foodCount = {}, drinkCount = {};
         data.forEach(([name, food, drink]) => {
-          orderList.innerHTML += `<li>${name}：🍱 ${food} 🥤 ${drink}</li>`;
-          food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => {
-  foodCount[f] = (foodCount[f] || 0) + 1;
+  orderList.innerHTML += `<li>${name}：🍱 ${food || ""} 🥤 ${drink || ""}</li>`;
+
+  if (food) {
+    food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => {
+      foodCount[f] = (foodCount[f] || 0) + 1;
+    });
+  }
+
+  if (drink) {
+    drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
+      drinkCount[d] = (drinkCount[d] || 0) + 1;
+    });
+  }
 });
+
 
 drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
   drinkCount[d] = (drinkCount[d] || 0) + 1;
