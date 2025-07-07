@@ -289,8 +289,9 @@ drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
         if (record) {
           const [_, food, drink] = record;
           clearSections();
-          if(food) food.split(/,|\s+/).filter(Boolean).forEach(f => addItem("food-section", "food", f));
-          if(drink) drink.split(/,|\s+/).filter(Boolean).forEach(d => addItem("drink-section", "drink", d));
+          if (food) food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => addItem("food-section", "food", f));
+          if (drink) drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => addItem("drink-section", "drink", d));
+
         } else {
           clearSections();
         }
