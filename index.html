@@ -169,177 +169,158 @@
   </form>
 
   <div class="summary">
-  <h3>統計結果</h3>
-  <div id="summary"></div>
-  <button class="add-btn" onclick="copyText('summary')">📋 複製統計</button>
-  <button class="add-btn" onclick="sendToLine('summary')">📤 傳送統計到 LINE</button>
-</div>
-
+    <h3>統計結果</h3>
+    <div id="summary"></div>
+    <button class="add-btn" onclick="copyText('summary')">📋 複製統計</button>
+    <button class="add-btn" onclick="sendToLine('summary')">📤 傳送統計到 LINE</button>
+  </div>
 
   <div>
-  <h3>點餐明細</h3>
-  <ul id="orderList"></ul>
-  <button class="add-btn" onclick="copyText('orderList')">📋 複製點餐明細</button>
-  <button class="add-btn" onclick="sendToLine('orderList')">📤 傳送點餐明細到 LINE</button>
-</div>
+    <h3>點餐明細</h3>
+    <ul id="orderList"></ul>
+    <button class="add-btn" onclick="copyText('orderList')">📋 複製點餐明細</button>
+    <button class="add-btn" onclick="sendToLine('orderList')">📤 傳送點餐明細到 LINE</button>
+  </div>
 
   <footer>
-  <p>Made by Lynn Lai</p>
-</footer>
+    <p>Made by Lynn Lai</p>
+  </footer>
 
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwKSqJP_0Txx1vSsLsP0NlEeFaFXju7kycqn5y3IArHgcPABWoGsISI5QopDPL3ayrH/exec";
 
-<script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbwKSqJP_0Txx1vSsLsP0NlEeFaFXju7kycqn5y3IArHgcPABWoGsISI5QopDPL3ayrH/exec";
-
-  function addItem(sectionId, name, value = "") {
-    const section = document.getElementById(sectionId);
-    const div = document.createElement("div");
-    div.className = "item-group";
-    div.innerHTML = `
-      <input type="text" name="${name}" value="${value}" placeholder="請輸入${name === 'food' ? '食物' : '飲料'}" />
-      <button type="button" class="remove-btn" aria-label="刪除此項目">－</button>
-    `;
-    div.querySelector("button").onclick = () => div.remove();
-    section.appendChild(div);
-  }
-
-  // 新增食物、飲料按鈕事件
-  document.getElementById("addFoodBtn").addEventListener("click", () => addItem("food-section", "food"));
-  document.getElementById("addDrinkBtn").addEventListener("click", () => addItem("drink-section", "drink"));
-
-  const form = document.getElementById("orderForm");
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    const name = document.getElementById("name").value.trim();
-    if (!name) {
-      alert("請輸入姓名！");
-      return;
-    }
-    const foods = Array.from(document.querySelectorAll("input[name=food]"))
-                      .map(f => f.value.trim())
-                      .filter(Boolean);
-    const drinks = Array.from(document.querySelectorAll("input[name=drink]"))
-                      .map(f => f.value.trim())
-                      .filter(Boolean);
-
-    if (foods.length === 0 && drinks.length === 0) {
-      alert("請至少點一樣食物或飲料！");
-      return;
+    function addItem(sectionId, name, value = "") {
+      const section = document.getElementById(sectionId);
+      const div = document.createElement("div");
+      div.className = "item-group";
+      div.innerHTML = `
+        <input type="text" name="${name}" value="${value}" placeholder="請輸入${name === 'food' ? '食物' : '飲料'}" />
+        <button type="button" class="remove-btn">－</button>
+      `;
+      div.querySelector("button").onclick = () => div.remove();
+      section.appendChild(div);
     }
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("food", foods.join(", "));
-    formData.append("drink", drinks.join(", "));
+    document.getElementById("addFoodBtn").addEventListener("click", () => addItem("food-section", "food"));
+    document.getElementById("addDrinkBtn").addEventListener("click", () => addItem("drink-section", "drink"));
 
-    fetch(scriptURL, { method: "POST", body: formData })
-      .then(() => {
-        alert("送出成功！");
-        form.reset();
-        clearSections();
-        loadOrders();
-      })
-      .catch(err => {
-        alert("送出失敗，請稍後再試");
-        console.error(err);
-      });
-  });
+    const form = document.getElementById("orderForm");
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      if (!name) {
+        alert("請輸入姓名！");
+        return;
+      }
+      const foods = Array.from(document.querySelectorAll("input[name=food]"))
+                        .map(f => f.value.trim()).filter(Boolean);
+      const drinks = Array.from(document.querySelectorAll("input[name=drink]"))
+                        .map(f => f.value.trim()).filter(Boolean);
 
-  function clearSections() {
-    document.getElementById("food-section").innerHTML = "";
-    document.getElementById("drink-section").innerHTML = "";
-  }
+      if (foods.length === 0 && drinks.length === 0) {
+        alert("請至少點一樣食物或飲料！");
+        return;
+      }
 
-  function loadOrders() {
-    fetch(scriptURL + "?action=get")
-      .then(res => res.json())
-      .then(data => {
-        const orderList = document.getElementById("orderList");
-        const summary = document.getElementById("summary");
-        orderList.innerHTML = "";
-        const foodCount = {}, drinkCount = {};
-        data.forEach(([name, food, drink]) => {
-  orderList.innerHTML += `<li>${name}：🍱 ${food || ""} 🥤 ${drink || ""}</li>`;
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("food", foods.join(", "));
+      formData.append("drink", drinks.join(", "));
 
-  if (food) {
-    food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => {
-      foodCount[f] = (foodCount[f] || 0) + 1;
-    });
-  }
-
-  if (drink) {
-    drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
-      drinkCount[d] = (drinkCount[d] || 0) + 1;
-    });
-  }
-});
-
-
-drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
-  drinkCount[d] = (drinkCount[d] || 0) + 1;
-});
-
+      fetch(scriptURL, { method: "POST", body: formData })
+        .then(() => {
+          alert("送出成功！");
+          form.reset();
+          clearSections();
+          loadOrders();
+        })
+        .catch(err => {
+          alert("送出失敗，請稍後再試");
+          console.error(err);
         });
-        summary.innerHTML =
-          "🍱 食物：<br>" + Object.entries(foodCount).map(([k,v]) => `${k}: ${v}`).join("<br>") +
-          "<br><br>🥤 飲料：<br>" + Object.entries(drinkCount).map(([k,v]) => `${k}: ${v}`).join("<br>");
-      });
-  }
+    });
 
-  // 載入姓名時帶出對應點餐內容
-  document.getElementById("name").addEventListener("blur", () => {
-    const name = document.getElementById("name").value.trim();
-    if (!name) {
-      clearSections();
-      return;
+    function clearSections() {
+      document.getElementById("food-section").innerHTML = "";
+      document.getElementById("drink-section").innerHTML = "";
     }
-    fetch(scriptURL + "?action=get")
-      .then(res => res.json())
-      .then(data => {
-        const record = data.find(row => row[0] === name);
-        if (record) {
-          const [_, food, drink] = record;
-          clearSections();
-          if (food) food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => addItem("food-section", "food", f));
-          if (drink) drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => addItem("drink-section", "drink", d));
 
-        } else {
-          clearSections();
-        }
-      });
-  });
+    function loadOrders() {
+      fetch(scriptURL + "?action=get")
+        .then(res => res.json())
+        .then(data => {
+          const orderList = document.getElementById("orderList");
+          const summary = document.getElementById("summary");
+          orderList.innerHTML = "";
+          const foodCount = {}, drinkCount = {};
 
-  // 頁面初始化：起始給一個空白的食物和飲料輸入欄
-  window.onload = () => {
-    clearSections();
-    addItem("food-section", "food");
-    addItem("drink-section", "drink");
-    loadOrders();
-  };
+          data.forEach(([name, food, drink]) => {
+            orderList.innerHTML += `<li>${name}：🍱 ${food || ""} 🥤 ${drink || ""}</li>`;
+            if (food) {
+              food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => {
+                foodCount[f] = (foodCount[f] || 0) + 1;
+              });
+            }
+            if (drink) {
+              drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => {
+                drinkCount[d] = (drinkCount[d] || 0) + 1;
+              });
+            }
+          });
 
-function copyText(id) {
-  const element = document.getElementById(id);
-  const text = id === "orderList"
-    ? Array.from(element.querySelectorAll("li")).map(li => li.textContent).join("\n")
-    : element.innerText.replace(/<br>/g, "\n");
-  navigator.clipboard.writeText(text)
-    .then(() => alert("已複製到剪貼簿"))
-    .catch(() => alert("複製失敗"));
-}
+          summary.innerHTML =
+            "🍱 食物：<br>" + Object.entries(foodCount).map(([k,v]) => `${k}: ${v}`).join("<br>") +
+            "<br><br>🥤 飲料：<br>" + Object.entries(drinkCount).map(([k,v]) => `${k}: ${v}`).join("<br>");
+        });
+    }
 
-function sendToLine(id) {
-  const element = document.getElementById(id);
-  const text = id === "orderList"
-    ? Array.from(element.querySelectorAll("li")).map(li => li.textContent).join("\n")
-    : element.innerText.replace(/<br>/g, "\n");
-  const encoded = encodeURIComponent(text);
-  const lineURL = `https://line.me/R/msg/text/?${encoded}`;
-  window.open(lineURL, "_blank");
-}
+    document.getElementById("name").addEventListener("blur", () => {
+      const name = document.getElementById("name").value.trim();
+      if (!name) {
+        clearSections();
+        return;
+      }
+      fetch(scriptURL + "?action=get")
+        .then(res => res.json())
+        .then(data => {
+          const record = data.find(row => row[0] === name);
+          if (record) {
+            const [_, food, drink] = record;
+            clearSections();
+            if (food) food.split(",").map(f => f.trim()).filter(Boolean).forEach(f => addItem("food-section", "food", f));
+            if (drink) drink.split(",").map(d => d.trim()).filter(Boolean).forEach(d => addItem("drink-section", "drink", d));
+          } else {
+            clearSections();
+          }
+        });
+    });
 
+    window.onload = () => {
+      clearSections();
+      addItem("food-section", "food");
+      addItem("drink-section", "drink");
+      loadOrders();
+    };
 
+    function copyText(id) {
+      const element = document.getElementById(id);
+      const text = id === "orderList"
+        ? Array.from(element.querySelectorAll("li")).map(li => li.textContent).join("\n")
+        : element.innerText.replace(/<br>/g, "\n");
+      navigator.clipboard.writeText(text)
+        .then(() => alert("已複製到剪貼簿"))
+        .catch(() => alert("複製失敗"));
+    }
 
-  
-</script>
+    function sendToLine(id) {
+      const element = document.getElementById(id);
+      const text = id === "orderList"
+        ? Array.from(element.querySelectorAll("li")).map(li => li.textContent).join("\n")
+        : element.innerText.replace(/<br>/g, "\n");
+      const encoded = encodeURIComponent(text);
+      const lineURL = `https://line.me/R/msg/text/?${encoded}`;
+      window.open(lineURL, "_blank");
+    }
+  </script>
 </body>
 </html>
